@@ -163,6 +163,10 @@ public:
      */
     Folder *currentSyncFolder() const;
 
+    //FUSE
+    void setCurrentSyncFolder(Folder *folder);
+    void startSyncNow(const QStringList &filesList);
+
     /** Removes all folders */
     int unloadAndDeleteAllFolders();
 

@@ -862,7 +862,7 @@ void FolderMan::slotFolderSyncFinished(const SyncResult &)
         qPrintable(_currentSyncFolder->remoteUrl().toString()));
 
     _lastSyncFolder = _currentSyncFolder;
-    _currentSyncFolder = 0;
+    _currentSyncFolder = nullptr;
 
     startScheduledSyncSoon();
 }
@@ -892,8 +892,8 @@ Folder *FolderMan::addFolder(AccountState *accountState, const FolderDefinition 
 
     if (folder) {
         folder->saveToSettings();
-        emit folderSyncStateChange(folder);
-        emit folderListChanged(_folderMap);
+//        emit folderSyncStateChange(folder);
+//        emit folderListChanged(_folderMap);
     }
 
     _navigationPaneHelper.scheduleUpdateCloudStorageRegistry();
@@ -930,7 +930,7 @@ Folder *FolderMan::addFolderInternal(FolderDefinition folderDefinition,
     connect(folder, &Folder::watchedFileChangedExternally,
         &folder->syncEngine().syncFileStatusTracker(), &SyncFileStatusTracker::slotPathTouched);
 
-    folder->registerFolderWatcher();
+    //folder->registerFolderWatcher();
     registerFolderWithSocketApi(folder);
     return folder;
 }
@@ -1410,6 +1410,19 @@ void FolderMan::restartApplication()
     } else {
         qCDebug(lcFolderMan) << "On this platform we do not restart.";
     }
+}
+
+void FolderMan::setCurrentSyncFolder(Folder *folder){
+    terminateSyncProcess();
+    _currentSyncFolder = folder;
+}
+
+void FolderMan::startSyncNow(const QStringList &filesList){
+    terminateSyncProcess();
+    _startScheduledSyncTimer.stop();
+    _scheduledFolders.clear();
+    if(_currentSyncFolder->canSync())
+        _currentSyncFolder->startSync(filesList);
 }
 
 } // namespace OCC
